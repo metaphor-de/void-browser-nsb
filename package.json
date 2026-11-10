@@ -1,0 +1,31 @@
+{
+  "name": "void-browser",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.void.browser",
+    "productName": "VOID Browser",
+    "compression": "maximum",
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "main.js",
+      "dub-pipeline.js",
+      "tools-setup.js",
+      "index.html"
+    ]
+  },
+  "dependencies": {
+    "google-tts-api": "^2.0.2",
+    "msedge-tts": "^2.1.1"
+  }
+}

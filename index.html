@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOID Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&family=Orbitron:wght@600;900&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg-void: #06070d; --bg-surface: rgba(13, 17, 30, 0.75); --bg-glass: rgba(22, 27, 46, 0.55); --bg-hover: rgba(36, 43, 72, 0.6); --border-glass: rgba(255, 255, 255, 0.08); --border-glow: rgba(6, 182, 212, 0.35); --accent-cyan: #00f2fe; --accent-purple: #8b5cf6; --accent-pink: #ec4899; --accent-grad: linear-gradient(135deg, #00f2fe 0%, #8b5cf6 50%, #ec4899 100%); --accent-grad-subtle: linear-gradient(135deg, rgba(0,242,254,0.15), rgba(139,92,246,0.15)); --text-primary: #f8fafc; --text-secondary: #94a3b8; --text-muted: #64748b; --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px; --radius-pill: 9999px; --glow-cyan: 0 0 20px rgba(0, 242, 254, 0.35); --glow-purple: 0 0 25px rgba(139, 92, 246, 0.35); --shadow-modal: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(139, 92, 246, 0.15); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', -apple-system, sans-serif; user-select: none; scrollbar-width: thin; scrollbar-color: var(--accent-purple) transparent; }
+        *::-webkit-scrollbar { width: 5px; height: 5px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 10px; }
+        *::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+        body { background-color: var(--bg-void) !important; color: var(--text-primary) !important; height: 100vh; display: flex; flex-direction: column; overflow: hidden; background-image: radial-gradient(circle at 10% 10%, rgba(139, 92, 246, 0.08) 0%, transparent 40%), radial-gradient(circle at 90% 90%, rgba(0, 242, 254, 0.06) 0%, transparent 40%); }
+        header { background: var(--bg-surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-glass); padding: 8px 16px 10px; display: flex; flex-direction: column; gap: 8px; z-index: 100; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); }
+        .tabs-container { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 2px 0 4px; }
+        .tab { background: var(--bg-glass); color: var(--text-secondary); padding: 8px 14px; border-radius: var(--radius-md); display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); max-width: 220px; min-width: 140px; border: 1px solid var(--border-glass); position: relative; }
+        .tab:hover { background: var(--bg-hover); color: var(--text-primary); border-color: rgba(255, 255, 255, 0.15); }
+        .tab.active { background: rgba(26, 33, 56, 0.9); color: #fff; border-color: var(--border-glow); box-shadow: var(--glow-cyan); }
+        .tab.active::after { content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%; height: 2px; background: var(--accent-grad); border-radius: 2px; box-shadow: 0 0 10px var(--accent-cyan); }
+        .tab-icon { font-size: 0.8rem; color: var(--accent-cyan); }
+        .tab-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+        .tab-close { font-size: 0.75rem; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: all 0.2s ease; }
+        .tab-close:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; transform: scale(1.1); }
+        .add-tab-btn { background: var(--bg-glass); border: 1px dashed var(--border-glass); color: var(--text-secondary); width: 34px; height: 34px; min-width: 34px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .add-tab-btn:hover { background: var(--accent-grad-subtle); border-color: var(--accent-cyan); color: var(--accent-cyan); transform: rotate(90deg); }
+        .controls-bar { display: flex; align-items: center; gap: 10px; }
+        .nav-group { display: flex; align-items: center; gap: 6px; }
+        .nav-btn { background: var(--bg-glass); border: 1px solid var(--border-glass); color: var(--text-secondary); width: 38px; height: 38px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+        .nav-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: rgba(255, 255, 255, 0.2); transform: translateY(-2px); }
+        .nav-btn:active { transform: translateY(0); }
+        .nav-btn.special-ai { background: var(--accent-grad-subtle); border-color: rgba(139, 92, 246, 0.4); color: var(--accent-cyan); }
+        .nav-btn.special-ai:hover { border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+        .url-box { flex: 1; position: relative; display: flex; align-items: center; }
+        .url-badge { position: absolute; left: 10px; display: flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: var(--radius-pill); color: var(--accent-cyan); font-size: 0.75rem; pointer-events: none; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .url-input { width: 100%; background: rgba(10, 13, 24, 0.85); border: 1px solid var(--border-glass); padding: 10px 18px 10px 85px; border-radius: var(--radius-pill); color: var(--text-primary); font-size: 0.92rem; outline: none; direction: ltr; text-align: left; transition: all 0.3s ease; }
+        .url-input:focus { border-color: var(--accent-cyan); background: rgba(12, 17, 33, 0.95); box-shadow: var(--glow-cyan); }
+        main { flex: 1; position: relative; background: var(--bg-void); overflow: hidden; }
+        .tab-content { width: 100%; height: 100%; display: none; }
+        .tab-content.active { display: block; }
+        webview { width: 100%; height: 100%; background: #ffffff; border: none; }
+        .home-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 32px; padding: 24px; position: relative; background: radial-gradient(ellipse at 50% 30%, rgba(139, 92, 246, 0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(0, 242, 254, 0.08) 0%, transparent 50%); }
+        .clock-widget { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .clock-time { font-family: 'Orbitron', sans-serif; font-size: 3.5rem; font-weight: 900; letter-spacing: 4px; background: var(--accent-grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 40px rgba(0, 242, 254, 0.3); }
+        .clock-date { color: var(--text-secondary); font-size: 0.95rem; letter-spacing: 1px; }
+        .brand-container { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .brand-title { font-family: 'Orbitron', sans-serif; font-size: 2.8rem; font-weight: 900; background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 6px; position: relative; }
+        .brand-tagline { color: var(--text-muted); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; }
+        .home-search { width: 100%; max-width: 640px; position: relative; }
+        .home-search input { width: 100%; padding: 16px 24px 16px 56px; border-radius: var(--radius-pill); border: 1px solid var(--border-glass); background: rgba(18, 23, 41, 0.7); backdrop-filter: blur(15px); color: var(--text-primary); font-size: 1.05rem; outline: none; direction: ltr; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); transition: all 0.3s ease; }
+        .home-search input:focus { border-color: var(--accent-purple); box-shadow: var(--glow-purple), 0 20px 40px rgba(0, 0, 0, 0.6); transform: scale(1.01); }
+        .home-search i { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); color: var(--accent-cyan); font-size: 1.2rem; }
+        .shortcuts { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; max-width: 700px; }
+        .shortcut-card { background: var(--bg-surface); backdrop-filter: blur(12px); border: 1px solid var(--border-glass); padding: 20px 16px; border-radius: var(--radius-lg); display: flex; flex-direction: column; align-items: center; gap: 12px; width: 110px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .shortcut-card::before { content: ''; position: absolute; inset: 0; background: var(--accent-grad-subtle); opacity: 0; transition: opacity 0.3s ease; }
+        .shortcut-card:hover { transform: translateY(-6px); border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+        .shortcut-card:hover::before { opacity: 1; }
+        .shortcut-card i { font-size: 2rem; color: var(--accent-cyan); position: relative; z-index: 1; transition: transform 0.3s ease; }
+        .shortcut-card:hover i { transform: scale(1.15); }
+        .shortcut-card span { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); position: relative; z-index: 1; }
+        .modal { position: fixed; inset: 0; background: rgba(4, 6, 12, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; opacity: 0; transition: opacity 0.25s ease; }
+        .modal.show { display: flex; opacity: 1; }
+        .modal-content { background: rgba(14, 18, 33, 0.95); border: 1px solid var(--border-glass); border-radius: var(--radius-lg); width: 90%; max-width: 560px; padding: 24px; box-shadow: var(--shadow-modal); display: flex; flex-direction: column; gap: 18px; transform: scale(0.95); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-glass); padding-bottom: 14px; }
+        .modal-header h3 { display: flex; align-items: center; gap: 10px; font-size: 1.15rem; color: var(--text-primary); }
+        .modal-header h3 i { color: var(--accent-cyan); }
+        .modal-close { cursor: pointer; color: var(--text-muted); font-size: 1.2rem; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
+        .modal-close:hover { background: rgba(255, 255, 255, 0.1); color: #ef4444; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg-glass); border: 1px solid var(--border-glass); border-radius: var(--radius-md); margin-bottom: 10px; font-size: 0.9rem; transition: all 0.2s; }
+        .list-item:hover { border-color: rgba(255, 255, 255, 0.2); background: var(--bg-hover); }
+        .btn { background: var(--accent-grad); color: #fff; border: none; padding: 9px 18px; border-radius: var(--radius-pill); cursor: pointer; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(0, 242, 254, 0.25); }
+        .btn:hover { transform: translateY(-2px); box-shadow: var(--glow-cyan); }
+        .btn:active { transform: translateY(0); }
+        .progress-bar { width: 100%; height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-pill); overflow: hidden; margin-top: 6px; }
+        .progress-fill { height: 100%; background: var(--accent-grad); width: 0%; border-radius: var(--radius-pill); transition: width 0.3s ease; box-shadow: 0 0 10px var(--accent-cyan); }
+        .ai-drawer { position: fixed; top: 0; left: 0; bottom: 0; width: 420px; max-width: 90vw; background: rgba(12, 16, 31, 0.95); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-right: 1px solid var(--border-glass); z-index: 1001; display: flex; flex-direction: column; box-shadow: 20px 0 60px rgba(0, 0, 0, 0.7); transform: translateX(-105%); transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
+        .ai-drawer.open { transform: translateX(0); }
+        .ai-drawer-header { padding: 18px 20px; border-bottom: 1px solid var(--border-glass); display: flex; align-items: center; justify-content: space-between; background: rgba(18, 24, 46, 0.5); }
+        .ai-drawer-title { display: flex; align-items: center; gap: 12px; font-size: 1.1rem; font-weight: 700; }
+        .ai-status-badge { font-size: 0.7rem; background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: var(--radius-pill); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; gap: 4px; }
+        .ai-status-badge::before { content: ''; width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 6px #10b981; }
+        .ai-setup-box { margin: 12px 16px 0; padding: 14px; background: rgba(22, 28, 52, 0.75); border: 1px dashed var(--accent-cyan); border-radius: var(--radius-md); display: none; flex-direction: column; gap: 8px; font-size: 0.85rem; }
+        .ai-chat-box { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .ai-msg { padding: 12px 16px; border-radius: var(--radius-md); font-size: 0.9rem; line-height: 1.6; max-width: 85%; word-break: break-word; animation: fadeInMsg 0.25s ease-out; }
+        @keyframes fadeInMsg { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .ai-msg.user { background: var(--accent-grad); color: #fff; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25); }
+        .ai-msg.bot { background: var(--bg-surface); color: var(--text-primary); align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid var(--border-glass); }
+        .ai-quick-prompts { padding: 8px 16px; display: flex; gap: 8px; overflow-x: auto; border-top: 1px solid var(--border-glass); }
+        .ai-chip { background: var(--bg-glass); border: 1px solid var(--border-glass); color: var(--text-secondary); padding: 6px 12px; border-radius: var(--radius-pill); font-size: 0.78rem; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
+        .ai-chip:hover { border-color: var(--accent-cyan); color: var(--accent-cyan); background: var(--bg-hover); }
+        .ai-input-area { padding: 14px 16px; background: rgba(10, 14, 28, 0.8); border-top: 1px solid var(--border-glass); display: flex; gap: 10px; }
+        .ai-input-area input { flex: 1; background: rgba(22, 28, 52, 0.8); border: 1px solid var(--border-glass); padding: 10px 16px; border-radius: var(--radius-pill); color: var(--text-primary); font-size: 0.9rem; outline: none; }
+        .ai-input-area input:focus { border-color: var(--accent-cyan); box-shadow: var(--glow-cyan); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="tabs-container" id="tabsContainer">
+            <button class="add-tab-btn" onclick="addNewTab()" title="تب جدید"><i class="fa-solid fa-plus"></i></button>
+        </div>
+        <div class="controls-bar">
+            <div class="nav-group">
+                <button class="nav-btn" onclick="navigateActiveTab('back')" title="بازگشت"><i class="fa-solid fa-arrow-right"></i></button>
+                <button class="nav-btn" onclick="navigateActiveTab('forward')" title="جلو"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="nav-btn" onclick="reloadActiveTab()" title="بروزرسانی"><i class="fa-solid fa-rotate-right"></i></button>
+                <button class="nav-btn" onclick="goHome()" title="صفحه اصلی"><i class="fa-solid fa-house"></i></button>
+            </div>
+            <div class="url-box">
+                <div class="url-badge"><i class="fa-solid fa-lock"></i><span>VOID</span></div>
+                <input type="text" id="urlInput" class="url-input" placeholder="آدرس سایت یا جستجو در وب..." onkeydown="handleUrlKey(event)">
+            </div>
+            <div class="nav-group">
+                <button class="nav-btn" onclick="openDownloadModal()" title="دانلود و استخراج کیفیت‌های ویدیو"><i class="fa-solid fa-video" style="color: var(--accent-cyan);"></i></button>
+                <button class="nav-btn special-ai" onclick="toggleAiDrawer(true)" title="دستیار هوش مصنوعی VOID"><i class="fa-solid fa-brain"></i></button>
+                <button class="nav-btn" onclick="toggleModal('downloadsModal', true)" title="مدیریت دانلودها"><i class="fa-solid fa-download"></i></button>
+            </div>
+        </div>
+    </header>
+    <main id="mainContainer"></main>
+
+    <div class="modal" id="downloadModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-circle-down"></i> انتخاب کیفیت و فرمت دانلود</h3>
+                <i class="fa-solid fa-xmark modal-close" onclick="toggleModal('downloadModal', false)"></i>
+            </div>
+            <div class="list-item" style="background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(0,242,254,0.1)); border-color: var(--accent-cyan); margin-bottom: 12px;">
+                <div>
+                    <b style="color: var(--accent-cyan);">🎬 دانلود با دوبله فارسی</b><br>
+                    <span style="font-size:0.75rem;color:var(--text-muted);">ترجمه با هوش مصنوعی لوکال</span>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                    <select id="dubQuality" style="background: rgba(22,28,52,0.9); border:1px solid var(--border-glass); color:var(--text-primary); padding:6px 10px; border-radius:8px; font-size:0.8rem;">
+                        <option value="360">360p</option><option value="480">480p</option><option value="720" selected>720p</option><option value="1080">1080p</option><option value="best">بهترین</option>
+                    </select>
+                    <button class="btn" onclick="startDubDownload()"><i class="fa-solid fa-microphone-lines"></i> شروع</button>
+                </div>
+            </div>
+            <div id="qualityListContainer" style="max-height: 380px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="downloadsModal">
+        <div class="modal-content" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-cloud-arrow-down"></i> مدیریت دانلودها</h3>
+                <i class="fa-solid fa-xmark modal-close" onclick="toggleModal('downloadsModal', false)"></i>
+            </div>
+            <div id="downloadsList" style="max-height: 360px; overflow-y: auto;">
+                <p style="text-align: center; color: var(--text-muted); padding: 40px;">هیچ دانلودی انجام نشده است.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tools-toast" id="toolsToast" style="position:fixed; bottom:16px; left:16px; z-index:99999; display:none; flex-direction:column; gap:6px; width:320px; background:var(--bg-secondary, #1a1a2e); border:1px solid var(--border-color, #333); border-radius:12px; padding:12px 14px; box-shadow:0 8px 24px rgba(0,0,0,.45); font-size:0.75rem;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-cloud-arrow-down" style="color:var(--accent-cyan,#06b6d4);"></i>
+            <b id="toolsToastTitle" style="color:#fff;">آماده‌سازی ابزارهای برنامه</b>
+            <i class="fa-solid fa-xmark" style="margin-inline-start:auto; cursor:pointer; color:#888;" onclick="document.getElementById('toolsToast').style.display='none'"></i>
+        </div>
+        <span id="toolsToastMsg" style="color:var(--text-secondary,#aaa);">در حال بررسی...</span>
+        <div style="height:5px; background:rgba(255,255,255,.08); border-radius:99px; overflow:hidden;">
+            <div id="toolsToastBar" style="height:100%; width:0%; background:var(--accent-cyan,#06b6d4); border-radius:99px; transition:width .3s;"></div>
+        </div>
+        <button id="toolsRetryBtn" onclick="retryToolsSetup()" style="display:none; align-self:flex-start; margin-top:4px; background:var(--accent-cyan,#06b6d4); color:#000; border:none; border-radius:8px; padding:6px 14px; cursor:pointer; font-weight:700; font-size:0.75rem;">🔄 تلاش مجدد</button>
+    </div>
+
+    <div class="ai-drawer" id="aiDrawer">
+        <div class="ai-drawer-header">
+            <div class="ai-drawer-title">
+                <i class="fa-solid fa-microchip" style="color: var(--accent-cyan);"></i>
+                <span>VOID Copilot (سرور لوکال متصل به اینترنت)</span>
+                <span class="ai-status-badge" id="aiServerBadge">بررسی...</span>
+            </div>
+            <i class="fa-solid fa-xmark modal-close" onclick="toggleAiDrawer(false)"></i>
+        </div>
+
+        <div class="ai-setup-box" id="aiSetupBox">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b id="setupTitle" style="color:var(--accent-cyan); font-size:0.85rem;"><i class="fa-solid fa-server"></i> راه‌اندازی سرور لوکال</b>
+                <span id="setupPercent" style="font-weight:700; color:#fff;">0%</span>
+            </div>
+            <span id="setupMsg" style="color:var(--text-secondary); font-size:0.75rem;">آماده‌سازی پورت 11434...</span>
+            <div class="progress-bar"><div class="progress-fill" id="setupBar" style="width: 0%;"></div></div>
+        </div>
+
+        <div class="ai-chat-box" id="aiChatBox">
+            <div class="ai-msg bot">سلام! من مغز متفکر مرورگر <b>VOID</b> هستم. بدون نیاز به فیلترشکن، روی سیستم خودتان به اینترنت زنده متصل هستم و می‌توانم سایت‌ها و کانال‌ها را باز کنم، کلمات را هایلایت کنم، اخبار و قیمت‌ها را جستجو کنم یا مقالات را بخوانم و خلاصه کنم. چه کاری برایتان انجام دهم؟</div>
+        </div>
+        <div class="ai-quick-prompts">
+            <div class="ai-chip" onclick="quickPrompt('برو توی چنل یوتیوب mr beast')">📺 چنل مستر بیست</div>
+            <div class="ai-chip" onclick="quickPrompt('جدیدترین اخبار تکنولوژی امروز چیه؟')">🌐 اخبار زنده وب</div>
+            <div class="ai-chip" onclick="quickPrompt('این صفحه رو برام خلاصه کن')">📄 خلاصه‌سازی صفحه</div>
+        </div>
+        <div class="ai-input-area">
+            <input type="text" id="aiInput" placeholder="دستور خود را بنویسید..." onkeydown="handleAiKey(event)">
+            <button class="btn" onclick="sendAiPrompt()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        let tabs = [];
+        let activeTabId = null;
+        let downloadsData = [];
+        let downloadIdCounter = 0;
+        let currentLoadingDiv = null;
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        window.onload = () => { 
+            addNewTab(); 
+            updateClock(); 
+            setInterval(updateClock, 1000);
+            checkAiServerReady();
+        };
+
+        async function checkAiServerReady() {
+            const badge = document.getElementById('aiServerBadge');
+            const ready = await ipcRenderer.invoke('check-ai-ready');
+            if (ready) {
+                badge.textContent = 'آنلاین (لوکال)';
+                badge.style.color = '#10b981';
+            } else {
+                badge.textContent = 'نیاز به راه‌اندازی';
+                badge.style.color = '#f59e0b';
+            }
+        }
+
+        ipcRenderer.on('ai-setup-status', (_e, data) => {
+            const box = document.getElementById('aiSetupBox');
+            box.style.display = 'flex';
+            if (data.error) {
+                document.getElementById('setupTitle').textContent = '⚠️ خطا در راه‌اندازی سرور';
+                document.getElementById('setupMsg').textContent = data.message;
+                return;
+            }
+            document.getElementById('setupMsg').textContent = data.message;
+            document.getElementById('setupPercent').textContent = `${data.percent}%`;
+            document.getElementById('setupBar').style.width = `${data.percent}%`;
+
+            if (data.done) {
+                setTimeout(() => {
+                    box.style.display = 'none';
+                    checkAiServerReady();
+                }, 2000);
+            }
+        });
+
+        ipcRenderer.on('ai-status', (event, msg) => {
+            if (currentLoadingDiv) {
+                currentLoadingDiv.innerHTML = `<i class="fa-solid fa-gear fa-spin"></i> ${escapeHtml(msg)}`;
+            }
+        });
+
+        ipcRenderer.on('open-new-tab', (e, url) => addNewTab(url));
+
+        // 📦 اعلان دانلود خودکار ابزارها در اولین اجرا
+        let toolsOverall = {};
+        function updateToolsToast() {
+            const toast = document.getElementById('toolsToast');
+            const bar = document.getElementById('toolsToastBar');
+            const order = ['ffmpeg', 'ytdlp', 'whisper', 'model'];
+            const doneCount = order.filter(k => toolsOverall[k] === 'done').length;
+            if (doneCount >= order.length) {
+                document.getElementById('toolsToastTitle').textContent = 'همه ابزارها آماده شدند ✓';
+                bar.style.width = '100%';
+                setTimeout(() => { toast.style.display = 'none'; }, 3000);
+                return;
+            }
+            toast.style.display = 'flex';
+            bar.style.width = `${(doneCount / order.length) * 100}%`;
+        }
+        ipcRenderer.on('tools-progress', (_e, data) => {
+            if (!data) return;
+            const toast = document.getElementById('toolsToast');
+            const msg = document.getElementById('toolsToastMsg');
+            toast.style.display = 'flex';
+            if (data.item === 'all') {
+                if (data.state === 'error') {
+                    document.getElementById('toolsToastTitle').textContent = '⚠️ خطا در دانلود ابزارها';
+                    msg.textContent = data.message;
+                    msg.style.color = '#f87171';
+                    document.getElementById('toolsRetryBtn').style.display = 'block';
+                } else if (data.state === 'done') {
+                    toolsOverall = { ffmpeg: 'done', ytdlp: 'done', whisper: 'done', model: 'done' };
+                }
+            } else {
+                toolsOverall[data.item] = data.state === 'done' ? 'done' : 'busy';
+            }
+            if (data.message) msg.textContent = data.message;
+            updateToolsToast();
+        });
+        function retryToolsSetup() {
+            document.getElementById('toolsRetryBtn').style.display = 'none';
+            const msg = document.getElementById('toolsToastMsg');
+            msg.style.color = '';
+            msg.textContent = 'در حال تلاش مجدد...';
+            document.getElementById('toolsToastTitle').textContent = 'آماده‌سازی ابزارهای برنامه';
+            toolsOverall = {};
+            ipcRenderer.invoke('retry-tools-setup');
+        }
+        // وضعیت اولیه را بگیر (اگر برنامه وسط دانلود دوباره باز شود)
+        ipcRenderer.invoke('get-tools-status').then(st => {
+            if (st && st.running) document.getElementById('toolsToast').style.display = 'flex';
+        });
+
+        ipcRenderer.on('analyze-image', (e, imgUrl) => {
+            toggleAiDrawer(true);
+            document.getElementById('aiInput').value = `این عکس رو تحلیل کن: ${imgUrl}`;
+            sendAiPrompt();
+        });
+
+        function updateClock() {
+            const now = new Date();
+            const timeEl = document.getElementById('liveTime');
+            const dateEl = document.getElementById('liveDate');
+            if (timeEl) timeEl.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            if (dateEl) dateEl.textContent = now.toLocaleDateString('fa-IR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        function toggleModal(id, show) { 
+            const el = document.getElementById(id);
+            if (show) { el.style.display = 'flex'; setTimeout(() => el.classList.add('show'), 10); }
+            else { el.classList.remove('show'); setTimeout(() => el.style.display = 'none', 250); }
+        }
+
+        function toggleAiDrawer(show) {
+            const drawer = document.getElementById('aiDrawer');
+            if (show) { drawer.classList.add('open'); document.getElementById('aiInput').focus(); }
+            else drawer.classList.remove('open');
+        }
+
+        function quickPrompt(text) {
+            document.getElementById('aiInput').value = text;
+            sendAiPrompt();
+        }
+
+        function addNewTab(url = '') {
+            const tabId = 'tab_' + Math.random().toString(36).slice(2, 11);
+            tabs.push({ id: tabId, title: 'تب جدید', url: url });
+            const tabEl = document.createElement('div');
+            tabEl.className = 'tab';
+            tabEl.id = `btn_${tabId}`;
+            tabEl.onclick = () => switchTab(tabId);
+            tabEl.innerHTML = `<i class="fa-solid fa-globe tab-icon"></i><span class="tab-title" id="title_${tabId}">تب جدید</span><i class="fa-solid fa-xmark tab-close" onclick="closeTab(event, '${tabId}')"></i>`;
+            document.querySelector('.add-tab-btn').before(tabEl);
+            const contentEl = document.createElement('div');
+            contentEl.className = 'tab-content';
+            contentEl.id = `content_${tabId}`;
+            document.getElementById('mainContainer').appendChild(contentEl);
+            if (url) createWebview(tabId, formatUrl(url)); else contentEl.innerHTML = getHomeScreenHTML(tabId); 
+            switchTab(tabId);
+        }
+
+        function switchTab(tabId) {
+            activeTabId = tabId;
+            document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`btn_${tabId}`)?.classList.add('active');
+            document.getElementById(`content_${tabId}`)?.classList.add('active');
+            const tab = tabs.find(t => t.id === tabId);
+            if (tab) document.getElementById('urlInput').value = tab.url || '';
+        }
+
+        function closeTab(event, tabId) {
+            event.stopPropagation();
+            if (tabs.length === 1) return;
+            const idx = tabs.findIndex(t => t.id === tabId);
+            tabs = tabs.filter(t => t.id !== tabId);
+            document.getElementById(`btn_${tabId}`)?.remove();
+            document.getElementById(`content_${tabId}`)?.remove();
+            if (activeTabId === tabId) switchTab(tabs[Math.max(0, idx - 1)].id);
+        }
+
+        function createWebview(tabId, targetUrl) {
+            const contentEl = document.getElementById(`content_${tabId}`);
+            contentEl.innerHTML = '';
+            const wv = document.createElement('webview');
+            wv.id = `webview_${tabId}`;
+            wv.setAttribute('src', targetUrl);
+            wv.setAttribute('webpreferences', 'nodeIntegration=no,contextIsolation=yes,sandbox=yes');
+            contentEl.appendChild(wv);
+
+            wv.addEventListener('did-navigate', (e) => {
+                const tab = tabs.find(t => t.id === tabId);
+                if (tab) tab.url = e.url;
+                if (tabId === activeTabId) document.getElementById('urlInput').value = e.url;
+            });
+            wv.addEventListener('page-title-updated', (e) => {
+                const tab = tabs.find(t => t.id === tabId);
+                if (tab) tab.title = e.title;
+                document.getElementById(`title_${tabId}`).innerText = e.title || 'وب‌سایت';
+            });
+        }
+
+        function handleUrlKey(e) { if (e.key === 'Enter') { const val = document.getElementById('urlInput').value.trim(); if (val) loadUrlInTab(activeTabId, val); } }
+        function handleHomeSearch(e, tabId) { if (e.key === 'Enter') { const val = e.target.value.trim(); if (val) loadUrlInTab(tabId, val); } }
+
+        function loadUrlInTab(tabId, input) {
+            const tab = tabs.find(t => t.id === tabId);
+            if (!tab) return;
+            const targetUrl = formatUrl(input);
+            tab.url = targetUrl;
+            const wv = document.getElementById(`webview_${tabId}`);
+            if (wv) wv.loadURL(targetUrl).catch(err => console.warn(err)); 
+            else createWebview(tabId, targetUrl); 
+            if (tabId === activeTabId) document.getElementById('urlInput').value = targetUrl;
+        }
+
+        function formatUrl(str) {
+            str = String(str || '').trim();
+            if (!str) return 'about:blank';
+            if (/^(https?|file|about):/i.test(str)) return str;
+            if (/^([\w\d-]+\.)+[\w\d]{2,}(:\d+)?(\/.*)?$/i.test(str)) return 'https://' + str;
+            return 'https://www.google.com/search?q=' + encodeURIComponent(str);
+        }
+
+        function navigateActiveTab(dir) {
+            const wv = document.getElementById(`webview_${activeTabId}`);
+            if (!wv) return;
+            if (dir === 'back' && wv.canGoBack()) wv.goBack();
+            if (dir === 'forward' && wv.canGoForward()) wv.goForward();
+        }
+
+        function reloadActiveTab() { document.getElementById(`webview_${activeTabId}`)?.reload(); }
+
+        function goHome() {
+            if (!activeTabId) return;
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (!tab) return;
+            tab.url = '';
+            document.getElementById(`title_${activeTabId}`).innerText = 'تب جدید';
+            document.getElementById(`content_${activeTabId}`).innerHTML = getHomeScreenHTML(activeTabId);
+            document.getElementById('urlInput').value = '';
+            updateClock();
+        }
+
+        function getHomeScreenHTML(tabId) {
+            return `
+                <div class="home-screen">
+                    <div class="clock-widget">
+                        <div class="clock-time" id="liveTime">--:--</div>
+                        <div class="clock-date" id="liveDate">در حال دریافت تاریخ...</div>
+                    </div>
+                    <div class="brand-container">
+                        <h1 class="brand-title">VOID</h1>
+                        <span class="brand-tagline">مرورگر نسل آینده مجهز به هوش مصنوعی زنده و لوکال</span>
+                    </div>
+                    <div class="home-search">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" placeholder="جستجو در وب یا وارد کردن آدرس..." onkeydown="handleHomeSearch(event, '${tabId}')" autofocus>
+                    </div>
+                    <div class="shortcuts">
+                        <div class="shortcut-card" onclick="loadUrlInTab('${tabId}', 'https://google.com')"><i class="fa-brands fa-google"></i><span>گوگل</span></div>
+                        <div class="shortcut-card" onclick="loadUrlInTab('${tabId}', 'https://youtube.com')"><i class="fa-brands fa-youtube" style="color: #ef4444;"></i><span>یوتیوب</span></div>
+                        <div class="shortcut-card" onclick="loadUrlInTab('${tabId}', 'https://github.com')"><i class="fa-brands fa-github" style="color: #f8fafc;"></i><span>گیت‌هاب</span></div>
+                        <div class="shortcut-card" onclick="loadUrlInTab('${tabId}', 'https://wikipedia.org')"><i class="fa-brands fa-wikipedia-w"></i><span>ویکی‌پدیا</span></div>
+                    </div>
+                </div>`;
+        }
+
+        function handleAiKey(e) { if (e.key === 'Enter') sendAiPrompt(); }
+
+        // =====================================================================
+        // 🎯 موتور اجرای دستورات هوش مصنوعی (هایلایت، باز کردن سایت‌ها و لینک‌ها)
+        // =====================================================================
+        async function sendAiPrompt() {
+            const inputEl = document.getElementById('aiInput');
+            const chatBox = document.getElementById('aiChatBox');
+            const prompt = inputEl.value.trim();
+            if (!prompt) return;
+
+            const userDiv = document.createElement('div');
+            userDiv.className = 'ai-msg user';
+            userDiv.textContent = prompt;
+            chatBox.appendChild(userDiv);
+            inputEl.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'ai-msg bot';
+            loadingDiv.innerHTML = '<i class="fa-solid fa-gear fa-spin"></i> در حال پردازش...';
+            chatBox.appendChild(loadingDiv);
+            currentLoadingDiv = loadingDiv;
+
+            try {
+                const activeContent = document.getElementById(`content_${activeTabId}`);
+                const webview = activeContent ? activeContent.querySelector('webview') : null;
+                let pageContext = { title: '', url: '', content: '' };
+                
+                if (webview) {
+                    pageContext.title = document.getElementById(`title_${activeTabId}`)?.innerText || '';
+                    pageContext.url = webview.getURL();
+                    try {
+                        pageContext.content = await webview.executeJavaScript(`document.body.innerText.replace(/\\s+/g, ' ').slice(0, 3000)`);
+                    } catch (e) {}
+                }
+
+                const response = await ipcRenderer.invoke('ask-local-ai', { 
+                    messages: [{ role: 'user', content: prompt }], 
+                    pageContext 
+                });
+                
+                currentLoadingDiv = null;
+
+                const openMatch = response.match(/ACTION:\s*OPEN\s*(.+)/i);
+                const highlightMatch = response.match(/ACTION:\s*HIGHLIGHT\s*(.+)/i);
+
+                if (openMatch) {
+                    const rawLine = openMatch[1].trim();
+                    const url = rawLine.split('\n')[0].replace(/["']/g, '').trim();
+                    const cleanMsg = response.replace(/ACTION:\s*OPEN\s*.+/i, '').trim();
+                    
+                    loadingDiv.innerHTML = cleanMsg ? escapeHtml(cleanMsg).replace(/\n/g, '<br>') : 'در حال باز کردن صفحه...';
+                    setTimeout(() => {
+                        loadUrlInTab(activeTabId, url);
+                    }, 400);
+                } 
+                else if (highlightMatch) {
+                    const rawLine = highlightMatch[1].trim();
+                    const word = rawLine.split('\n')[0].replace(/["'«»]/g, '').trim();
+                    const cleanMsg = response.replace(/ACTION:\s*HIGHLIGHT\s*.+/i, '').trim();
+                    
+                    loadingDiv.innerHTML = cleanMsg ? escapeHtml(cleanMsg).replace(/\n/g, '<br>') : `کلمه "${escapeHtml(word)}" هایلایت شد.`;
+                    executeHighlight(word);
+                } 
+                else {
+                    let formatted = escapeHtml(response)
+                        .replace(/(https?:\/\/[^\s<]+)/g, '<a href="#" onclick="loadUrlInTab(activeTabId, \'$1\'); return false;" style="color:var(--accent-cyan); text-decoration:underline;">$1</a>')
+                        .replace(/\n/g, '<br>');
+                    loadingDiv.innerHTML = formatted;
+                }
+
+            } catch (err) { 
+                currentLoadingDiv = null;
+                loadingDiv.innerHTML = `<span style="color: #ef4444;">خطا: ${escapeHtml(err.message)}</span>`; 
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // =====================================================================
+        // ✨ اسکریپت هایلایت هوشمند و اسکرول مستقیم روی کلمه
+        // =====================================================================
+        function executeHighlight(wordToHighlight) {
+            const activeTabContent = document.getElementById(`content_${activeTabId}`);
+            const webview = activeTabContent ? activeTabContent.querySelector('webview') : null;
+            if (!webview) return;
+
+            const cleanWord = wordToHighlight.replace(/["'«»]/g, '').trim();
+            if (!cleanWord || cleanWord.length < 1) return;
+
+            const jsCode = `
+                (function() {
+                    const phrase = ${JSON.stringify(cleanWord)};
+                    if (!phrase) return 0;
+
+                    document.querySelectorAll('mark.void-highlight').forEach(el => {
+                        const parent = el.parentNode;
+                        if (parent) {
+                            parent.replaceChild(document.createTextNode(el.textContent), el);
+                            parent.normalize();
+                        }
+                    });
+
+                    const regex = new RegExp(phrase.replace(/[-/\\\\^$*+?.()|[\\]{}]/g, '\\\\$&'), 'gi');
+                    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+                        acceptNode: function(node) {
+                            if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                            if (['SCRIPT', 'STYLE', 'MARK', 'NOSCRIPT', 'IFRAME'].includes(node.parentNode?.tagName)) return NodeFilter.FILTER_REJECT;
+                            return NodeFilter.FILTER_ACCEPT;
+                        }
+                    }, false);
+
+                    const textNodes = [];
+                    while (walker.nextNode()) {
+                        if (regex.test(walker.currentNode.nodeValue)) {
+                            textNodes.push(walker.currentNode);
+                        }
+                    }
+
+                    textNodes.forEach(node => {
+                        const span = document.createElement('span');
+                        span.innerHTML = node.nodeValue.replace(regex, match => 
+                            '<mark class="void-highlight" style="background:#ffeb3b !important; color:#000 !important; font-weight:bold; border-radius:3px; padding:2px 5px; box-shadow:0 0 10px #ffeb3b;">' + match + '</mark>'
+                        );
+                        if (node.parentNode) {
+                            node.parentNode.replaceChild(span, node);
+                        }
+                    });
+
+                    const first = document.querySelector('mark.void-highlight');
+                    if (first) {
+                        first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    return textNodes.length;
+                })()`;
+
+            webview.executeJavaScript(jsCode).catch(err => console.error('Highlight error:', err));
+        }
+
+        // 📊 پارس خروجی yt-dlp برای استخراج لیست کیفیت‌ها
+        function parseYtdlpFormats(raw) {
+            const formats = [];
+            const audioFormats = [];
+            for (const line of String(raw || '').split('\n')) {
+                const segs = line.split(/[|│]/);
+                if (segs.length < 2) continue;
+                const tokens = segs[0].trim().split(/\s+/);
+                if (!/^\d+$/.test(tokens[0] || '')) continue;
+                const id = tokens[0], ext = tokens[1] || '';
+                if (ext === 'mhtml') continue; // تصاویر storyboard ویدیو نیستند
+                const third = tokens[2] || '';
+                const sizeMatch = (segs[1] || '').match(/~?\s*([\d.]+\s*[KMGT]?i?B)/);
+                const size = sizeMatch ? sizeMatch[1].replace(/\s+/g, '') : '';
+                if (/^\d+x\d+$/.test(third)) {
+                    const height = parseInt(third.split('x')[1], 10);
+                    if (height < 100) continue; // رزولوشن‌های بسیار پایین (thumbnail)
+                    const fps = tokens[3] && /^\d+$/.test(tokens[3]) ? tokens[3] : '';
+                    formats.push({ id, ext, height, fps, size });
+                } else if (third === 'audio') {
+                    const abrMatch = (segs[2] || '').match(/([\d.]+)\s*k(?:\s|Hz|$)/);
+                    audioFormats.push({ id, ext, size, abr: abrMatch ? parseFloat(abrMatch[1]) : 0 });
+                }
+            }
+            // برای هر رزولوشن بهترین کدک را انتخاب می‌کنیم (mp4 در اولویت — سازگارترین)
+            const byHeight = new Map();
+            const score = f => (f.ext === 'mp4' ? 2 : f.ext === 'webm' ? 1 : 0);
+            for (const f of formats) {
+                const cur = byHeight.get(f.height);
+                if (!cur || score(f) > score(cur)) byHeight.set(f.height, f);
+            }
+            const videoList = [...byHeight.values()].sort((a, b) => b.height - a.height);
+            // بهترین صدا: بالاترین بیت‌ریت، با اولویت m4a برای سازگاری با خروجی mp4
+            const audioScore = a => (a.abr || 0) * (a.ext === 'm4a' ? 2 : 1);
+            const bestAudio = audioFormats.length ? audioFormats.reduce((best, a) => audioScore(a) > audioScore(best) ? a : best) : null;
+            return { videoList, bestAudio };
+        }
+
+        async function openDownloadModal() {
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (!tab || !tab.url) return alert('لطفاً ابتدا وارد صفحه یک ویدیو شوید.');
+            toggleModal('downloadModal', true);
+            const container = document.getElementById('qualityListContainer');
+            container.innerHTML = `<p style="text-align:center;color:var(--accent-cyan);padding:30px;"><i class="fa-solid fa-spinner fa-spin fa-2x" style="margin-bottom:10px; display:block;"></i>در حال استخراج رزولوشن‌ها...</p>`;
+            try {
+                const res = await ipcRenderer.invoke('get-video-formats', tab.url);
+                if (!res.success) { container.innerHTML = `<p style="text-align:center;color:#ef4444;padding:20px;">${escapeHtml(res.message)}</p>`; return; }
+                const { videoList, bestAudio } = parseYtdlpFormats(res.raw);
+                const encUrl = encodeURIComponent(tab.url);
+                let html = `<div class="list-item"><span>⭐ بهترین کیفیت پیش‌فرض (خودکار)</span><button class="btn" onclick="startCustomDownload('best', 'بهترین (خودکار)', '${encUrl}')"><i class="fa-solid fa-download"></i> دانلود</button></div>`;
+                for (const f of videoList) {
+                    html += `<div class="list-item"><span>🎬 <b>${f.height}p</b> <span style="color:var(--text-muted);font-size:0.75rem;">${escapeHtml(f.ext)}${f.fps ? ' • ' + f.fps + 'fps' : ''}${f.size ? ' • ~' + f.size : ''}</span></span><button class="btn" onclick="startCustomDownload('${f.id}', '${f.height}p', '${encUrl}')"><i class="fa-solid fa-download"></i> دانلود</button></div>`;
+                }
+                if (bestAudio) {
+                    html += `<div class="list-item"><span>🎵 <b>فقط صدا</b> <span style="color:var(--text-muted);font-size:0.75rem;">${escapeHtml(bestAudio.ext)}${bestAudio.size ? ' • ~' + bestAudio.size : ''}</span></span><button class="btn" onclick="startCustomDownload('${bestAudio.id}', 'فقط صدا', '${encUrl}')"><i class="fa-solid fa-music"></i> دانلود</button></div>`;
+                }
+                container.innerHTML = html;
+            } catch (err) { container.innerHTML = `<p style="text-align:center;color:#ef4444;padding:20px;">خطا: ${escapeHtml(err.message)}</p>`; }
+        }
+
+        // ⬇️ شروع دانلود معمولی (با کیفیت انتخاب‌شده)
+        function startCustomDownload(formatId, label, encodedUrl) {
+            const url = decodeURIComponent(encodedUrl);
+            toggleModal('downloadModal', false);
+            toggleModal('downloadsModal', true);
+            const dlId = 'dl_' + Date.now();
+            downloadsData.push({ id: dlId, type: 'video', name: `ویدیو — ${label}`, percent: 0, message: 'در حال اتصال...', status: 'running' });
+            renderDownloads();
+            ipcRenderer.send('start-custom-download', { id: dlId, url, formatId });
+        }
+
+        // 📡 وضعیت دانلودهای معمولی — یک بار برای همیشه ثبت می‌شوند
+        ipcRenderer.on('download-progress', (_e, d) => {
+            const item = downloadsData.find(x => x.id === d.id); if (!item) return;
+            item.percent = d.percent || 0;
+            if (d.message) { item.message = d.message; }
+            else {
+                const parts = [];
+                if (d.totalSize) parts.push('حجم: ' + d.totalSize);
+                if (d.speed) parts.push('سرعت: ' + d.speed);
+                if (d.eta) parts.push('باقی‌مانده: ' + d.eta);
+                item.message = parts.length ? parts.join(' — ') : 'در حال دانلود...';
+            }
+            renderDownloads();
+        });
+        ipcRenderer.on('download-status', (_e, d) => {
+            const item = downloadsData.find(x => x.id === d.id); if (!item) return;
+            item.status = d.status;
+            item.message = d.status === 'completed' ? '✅ دانلود کامل شد — پوشه Downloads' : d.message;
+            if (d.status === 'completed') item.percent = 100;
+            renderDownloads();
+        });
+
+        function startDubDownload() {
+            const tab = tabs.find(t => t.id === activeTabId);
+            if (!tab || !tab.url) return alert('ابتدا وارد صفحه ویدیو شوید');
+            const quality = document.getElementById('dubQuality')?.value || '720';
+            toggleModal('downloadModal', false);
+            toggleModal('downloadsModal', true);
+            const dlId = 'dub_' + Date.now();
+            const dlObj = { id: dlId, type: 'dub', name: `دوبله فارسی (${quality}p)`, percent: 0, message: 'آماده‌سازی سرور و دانلود...', status: 'running' };
+            downloadsData.push(dlObj);
+            renderDownloads();
+
+            const onProg = (_e, d) => { const item = downloadsData.find(x => x.id === d.id); if (!item) return; item.percent = d.percent || 0; item.message = d.message || ''; renderDownloads(); };
+            const onStat = (_e, d) => { const item = downloadsData.find(x => x.id === d.id); if (!item) return; item.status = d.status; item.message = d.message; if (d.status === 'completed') item.percent = 100; renderDownloads(); };
+            
+            ipcRenderer.on('dub-progress', onProg);
+            ipcRenderer.on('dub-status', onStat);
+            ipcRenderer.send('start-dub-download', { id: dlId, url: tab.url, voice: 'fa-IR-DilaraNeural', quality });
+        }
+
+        function renderDownloads() {
+            const container = document.getElementById('downloadsList');
+            if (downloadsData.length === 0) { container.innerHTML = `<p style="text-align:center;color:var(--text-muted);padding:30px;">هیچ دانلودی در جریان نیست.</p>`; return; }
+            container.innerHTML = downloadsData.map(item => `
+                <div class="list-item" style="flex-direction:column;align-items:stretch;gap:8px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;"><b>🎬 ${escapeHtml(item.name)}</b><span style="font-size:0.85rem;font-weight:700;color:var(--accent-cyan);">${Math.round(item.percent)}%</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${item.percent}%;"></div></div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(item.message || '')}</div>
+                </div>`).join('');
+        }
+    </script>
+</body>
+</html>
